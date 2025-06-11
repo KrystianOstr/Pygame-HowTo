@@ -1,4 +1,3 @@
-from curses import KEY_LEFT
 import pygame
 
 pygame.init()
