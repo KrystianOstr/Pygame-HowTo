@@ -3,8 +3,8 @@ import random
 
 py.init()
 
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 300
+SCREEN_HEIGHT = 300
 FPS = 60
 
 max_health = 200
@@ -51,6 +51,52 @@ def draw_overheal_is_not_allowed_text():
     text_surface = font_small.render("Overheal is not allowed, man!", True, white)
     text_rect = text_surface.get_rect(center=(110,85))
     screen.blit(text_surface, text_rect)
+
+def handle_input(event):
+    if event.type == py.MOUSEBUTTONDOWN:
+        handle_mouse(event)
+    if event.type == py.KEYDOWN:
+        handle_keyboard(event)
+
+
+def add_wounds():
+    global game_state, current_health
+
+    current_health -= get_random_value(20)
+    current_health = max(current_health, 0)
+    if current_health <= 0:
+        draw_healthbar()
+        py.display.update()
+        py.time.delay(500)
+        game_state = 'dead'
+
+def add_healing():
+    global current_health,max_health, overheal_text_timer
+    if current_health >= max_health:
+        overheal_text_timer = py.time.get_ticks() + 1000
+        return
+            
+    current_health += get_random_value(20, 15)
+    current_health = min(current_health,max_health)
+
+def handle_keyboard(event):
+    global game_state
+    if game_state == 'running':
+        if event.key == py.K_LEFT:
+            add_wounds()
+        if event.key == py.K_RIGHT:
+            add_healing()
+
+
+def handle_mouse(event):
+    global game_state
+    if game_state == "running":
+        if event.button == 1:
+            add_wounds()
+                            
+        if event.button == 3:
+            add_healing()
+                
     
 
 while run:
@@ -66,25 +112,10 @@ while run:
         if event.type == py.KEYDOWN:
             if event.key == py.K_ESCAPE:
                 run = False
-        if event.type == py.MOUSEBUTTONDOWN:
-            if game_state == "running":
-                if event.button == 1:
-                    current_health -= get_random_value(20)
-                    current_health = max(current_health, 0)
-                    if current_health <= 0:
-                        draw_healthbar()
-                        py.display.update()
-                        py.time.delay(500)
-                        game_state = 'dead'
-                        break
-                    
-                if event.button == 3:
-                    if current_health >= max_health:
-                        overheal_text_timer = py.time.get_ticks() + 1000
-                        break
-                    current_health += get_random_value(20, 15)
-                    current_health = min(current_health,max_health)
-                
+
+
+        handle_input(event)
+    
     if game_state == "running":
         draw_healthbar()
         py.display.update()
